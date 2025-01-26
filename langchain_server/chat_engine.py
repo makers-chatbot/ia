@@ -5,11 +5,13 @@ from langgraph.graph import MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.graph import START, END
 from inventory import InventoryManager
+import asyncio
 
 
 class ChatEngine:
     def __init__(self):
-        self.tools = [InventoryManager.get_product_list]
+        self.inventory_manager = InventoryManager()
+        self.tools = [self.get_product_list]  # Use instance method
         self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
         self.llm_with_tools = self.llm.bind_tools(self.tools)
         self.conversations: Dict[str, List[HumanMessage]] = {}
@@ -40,6 +42,10 @@ Remember:
 """
         )
         self.graph = self._create_graph()
+
+    def get_product_list(self) -> str:
+        """Wrapper for async get_product_list"""
+        return asyncio.run(self.inventory_manager.get_product_list())
 
     def _create_graph(self) -> StateGraph:
         """Create the LangChain graph for processing messages"""
@@ -85,7 +91,7 @@ Remember:
                 self.conversations[session_id].append(AIMessage(content=response))
                 return response
 
-            return "Lo siento, no pude procesar ese mensaje."
+            return "I'm sorry, I couldn't process that message."
         except Exception as e:
             print(f"Error processing message: {e}")
-            return "Lo siento, hubo un error al procesar tu mensaje."
+            return "I apologize, there was an error processing your message."
