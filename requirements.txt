@@ -1,0 +1,13 @@
+streamlit
+websockets
+fastapi
+uvicorn
+python-dotenv
+langchain>=0.1.0
+langchain-openai>=0.0.8
+langgraph>=0.2.56
+pydantic>=2.9.2
+langchain-core>=0.2.43
+cryptography>=43.0.3
+filelock
+langgraph-api
