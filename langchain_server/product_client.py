@@ -17,7 +17,7 @@ class Product(BaseModel):
     description: str
     price: float
     stock: int
-    warrantyPeriod: int
+    warrantyPeriod: Optional[int] = None
     releaseDate: int
     specifications: Optional[Dict] = None
     images: Optional[Dict] = {}
