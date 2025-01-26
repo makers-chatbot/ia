@@ -11,3 +11,4 @@ langchain-core>=0.2.43
 cryptography>=43.0.3
 filelock
 langgraph-api
+httpx==0.25.2

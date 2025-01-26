@@ -13,14 +13,14 @@ class Product(BaseModel):
     id: str
     name: str
     brand: str
-    model: str
+    model: Optional[str] = None
     description: str
     price: float
     stock: int
     warrantyPeriod: int
     releaseDate: int
     specifications: Optional[Dict] = None
-    images: Dict = {}
+    images: Optional[Dict] = {}
     category: str
     # Optional fields based on category
     processor: Optional[str] = None
@@ -31,6 +31,11 @@ class Product(BaseModel):
     operatingSystem: Optional[str] = None
     printingTechnology: Optional[str] = None
     connectivityOptions: Optional[List[str]] = None
+
+    class Config:
+        extra = "ignore"
+        validate_assignment = True
+        arbitrary_types_allowed = True
 
 
 class ProductClient:
