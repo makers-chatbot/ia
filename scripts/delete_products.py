@@ -98,6 +98,22 @@ class ProductAPI:
                 print(f"✅ Deleted product: {product_id}")
                 return True
         except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                # Try to delete just from MongoDB
+                try:
+                    print(
+                        f"⚠️  Product {product_id} not found in relational DB, trying MongoDB only..."
+                    )
+                    response = await client.delete(
+                        f"{self.base_url}/products/mongo/{product_id}",
+                        headers=self.headers,
+                    )
+                    response.raise_for_status()
+                    print(f"✅ Deleted product from MongoDB: {product_id}")
+                    return True
+                except Exception as mongo_e:
+                    print(f"❌ Failed to delete from MongoDB: {str(mongo_e)}")
+                    return False
             print(
                 f"❌ HTTP Error deleting product {product_id}: {e.response.status_code}"
             )
@@ -126,9 +142,27 @@ async def main():
         print("No products found to delete.")
         return
 
-    print(f"\nFound {len(products)} products to delete:")
+    print(f"\nFound {len(products)} products:")
+    print("\nDetailed product information:")
+    print("=" * 50)
     for product in products:
-        print(f"- {product['name']} (ID: {product['id']})")
+        print(f"\nProduct ID: {product['id']}")
+        print(f"Name: {product['name']}")
+        print(f"Brand: {product.get('brand', 'N/A')}")
+        print(f"Model: {product.get('model', 'N/A')}")
+        print(f"Category: {product.get('category', 'N/A')}")
+        print(f"Product Type: {product.get('productType', 'N/A')}")
+        print(f"Price: ${product.get('price', 'N/A')}")
+        print(f"Stock: {product.get('stock', 'N/A')}")
+        print("Fields present:", ", ".join(product.keys()))
+        print("-" * 50)
+
+    # Ask for confirmation before deleting
+    print("\nDo you want to proceed with deletion? (y/n)")
+    response = input().lower()
+    if response != "y":
+        print("Deletion cancelled.")
+        return
 
     # Delete each product
     print("\nDeleting products...")
@@ -141,6 +175,10 @@ async def main():
         print("\n✅ All products successfully deleted!")
     else:
         print(f"\n⚠️  {len(remaining_products)} products still remain in the database.")
+        print("\nRemaining products:")
+        for product in remaining_products:
+            print(f"- {product['name']} (ID: {product['id']})")
+            print(f"  Fields present: {', '.join(product.keys())}")
 
 
 if __name__ == "__main__":
